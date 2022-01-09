@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake</title>
+    <style>
+        body {
+            height: 100vh;
+            /* width: 100%; */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: brown;
+        }
+
+        .title {
+            font-size: 50px;
+            color: white;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+        }
+
+        #canvas {
+            background-color: rgb(153, 185, 172);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="title">S N A K E</div>
+    <canvas id="canvas" width="800" height="800"></canvas>
+    <script>
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+
+        const CANVASWEIGHT = canvas.clientWidth;
+        const CANVASHEIGHT = canvas.clientHeight;
+        let snakeSpeedX = 0;
+        let snakeSpeedY = 0;
+        let a = document.querySelector('body');
+        a.addEventListener('keydown', controlSnake);
+        function controlSnake(event) {
+            console.log(event.keyCode);
+            if (event.keyCode == 37) {
+                snakeSpeedY = 0;
+                snakeSpeedX = -3;
+            }
+            if (event.keyCode == 38) {
+                snakeSpeedY = -3;
+                snakeSpeedX = 0;
+            }
+            if (event.keyCode == 39) {
+                snakeSpeedY = 0;
+                snakeSpeedX = 3;
+            }
+            if (event.keyCode == 40) {
+                snakeSpeedY = 3;
+                snakeSpeedX = 0;
+            }
+        }
+
+        class Game {
+            constructor() {
+                this.snakePositionX = CANVASWEIGHT / 2;
+                this.snakePositionY = CANVASHEIGHT / 2;
+                this.snakeThickness = '20';
+                this.snakeColor = 'green';
+                this.snakePositionsArc = [[this.snakePositionX - this.snakeThickness * 2, this.snakePositionY], [this.snakePositionX, this.snakePositionY]];
+            }
+            render() {
+                ctx.beginPath();
+                for (let i = 0; i < this.snakePositionsArc.length; i++) {
+                    ctx.arc(this.snakePositionsArc[i][0], this.snakePositionsArc[i][1], this.snakeThickness, 0, 2 * Math.PI)
+                }
+
+                ctx.fillStyle = this.snakeColor;
+                ctx.fill();
+                this.collision();
+
+            }
+            update() {
+                this.snakePositionsArc.push([this.snakePositionsArc[this.snakePositionsArc.length - 1][0] + snakeSpeedX, this.snakePositionsArc[this.snakePositionsArc.length - 1][1] + snakeSpeedY]);
+                this.snakePositionsArc.shift();
+
+
+            }
+            run() {
+                this.render();
+                this.update();
+            }
+            collision() {
+                if (this.snakePositionsArc[0][0] <= this.snakeThickness || this.snakePositionsArc[0][0] >= CANVASWEIGHT - this.snakeThickness) {
+                    snakeSpeedX = 0;
+                    snakeSpeedY = 0;
+                }
+                if (this.snakePositionsArc[0][1] <= this.snakeThickness || this.snakePositionsArc[0][1] >= CANVASHEIGHT - this.snakeThickness) {
+                    snakeSpeedY = 0;
+                    snakeSpeedX = 0;
+                }
+            }
+            increaseSnake() {
+                this.snakePositionsArc = [[this.snakePositionX, this.snakePositionY]]
+            }
+
+        }
+
+        let game = new Game();
+        function start() {
+            ctx.clearRect(0, 0, CANVASWEIGHT, CANVASHEIGHT)
+            game.run();
+            requestAnimationFrame(start);
+
+        }
+        requestAnimationFrame(start);
+
+
+
+    </script>
+</body>
+
+</html>
