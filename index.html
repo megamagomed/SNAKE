@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake</title>
+    <style>
+        body {
+            height: 100vh;
+            /* width: 100%; */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: brown;
+        }
+
+        .title {
+            font-size: 50px;
+            color: white;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+        }
+
+        #canvas {
+            background-color: rgb(153, 185, 172);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="title">S N A K E</div>
+    <canvas id="canvas" width="800" height="800"></canvas>
+    <script>
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+
+        const CANVASWEIGHT = canvas.clientWidth;
+        const CANVASHEIGHT = canvas.clientHeight;
+        let snakeSpeedX = 40;
+        let snakeSpeedY = 0;
+        let a = document.querySelector('body');
+        let flag = true;
+        let collisionFlag = true;
+        a.addEventListener('keydown', controlSnake);
+        function controlSnake(event) {
+            console.log(event.keyCode);
+            if (event.keyCode == 37) {
+                snakeSpeedY = 0;
+                snakeSpeedX = -40;
+            }
+            if (event.keyCode == 38) {
+                snakeSpeedY = -40;
+                snakeSpeedX = 0;
+            }
+            if (event.keyCode == 39) {
+                snakeSpeedY = 0;
+                snakeSpeedX = 40;
+            }
+            if (event.keyCode == 40) {
+                snakeSpeedY = 40;
+                snakeSpeedX = 0;
+            }
+        }
+
+        class Game {
+            constructor() {
+                this.snakePositionX = CANVASWEIGHT / 2;
+                this.snakePositionY = CANVASHEIGHT / 2;
+                this.snakeThickness = '20';
+                this.snakeColor = 'green';
+                this.mealForSnakeColor = 'yellow';
+                this.snakePositionsArc = [[this.snakePositionX, this.snakePositionY]];
+                this.mealForSnakePositionX = 40 + 40*Math.floor(Math.random() * 18);
+                this.mealForSnakePositionY = 40 + 40*Math.floor(Math.random() * 18);
+            }
+            render() {
+
+                ctx.fillStyle = this.snakeColor;
+                for (let i = this.snakePositionsArc.length - 1; i >= 0; i--) {
+                    ctx.beginPath();
+                    ctx.arc(this.snakePositionsArc[i][0], this.snakePositionsArc[i][1], this.snakeThickness, 0, 2 * Math.PI)
+                    ctx.fill();
+                }
+                ctx.fillStyle = 'red'
+                ctx.font = '35px Arial '
+                ctx.textAlign = 'center'
+                ctx.fillText(this.snakePositionsArc.length, CANVASWEIGHT / 2, 50)
+                if (!collisionFlag) {
+                    this.endGame();
+                }
+
+
+
+            }
+            update() {
+                if (collisionFlag) {
+                    console.log(this.snakePositionsArc);
+                    console.log(this.mealForSnakePositionX);
+                    console.log(this.mealForSnakePositionY);
+                    this.snakePositionsArc.push([this.snakePositionsArc[this.snakePositionsArc.length - 1][0] + snakeSpeedX, this.snakePositionsArc[this.snakePositionsArc.length - 1][1] + snakeSpeedY]);
+                    this.snakePositionsArc.shift();
+                    if (this.mealForSnakePositionX == this.snakePositionsArc[this.snakePositionsArc.length - 1][0] && this.mealForSnakePositionY == this.snakePositionsArc[this.snakePositionsArc.length - 1][1]) {
+                        this.newMealPosition()
+                        this.snakePositionsArc.push([this.snakePositionsArc[this.snakePositionsArc.length - 1][0] + snakeSpeedX, this.snakePositionsArc[this.snakePositionsArc.length - 1][1] + snakeSpeedY]);
+                    }
+                }
+
+                this.collision();
+            }
+            run() {
+                this.render();
+                this.mealForSnake();
+                if (flag) {
+                    this.update();
+                    flag = false
+                    setTimeout(() => { flag = true }, 130)
+                }
+
+            }
+            collision() {
+
+                if ((this.snakePositionsArc[this.snakePositionsArc.length - 1][0] <= this.snakeThickness || this.snakePositionsArc[this.snakePositionsArc.length - 1][0] >= CANVASWEIGHT - this.snakeThickness)
+                    || (this.snakePositionsArc[this.snakePositionsArc.length - 1][1] <= this.snakeThickness || this.snakePositionsArc[this.snakePositionsArc.length - 1][1] >= CANVASHEIGHT - this.snakeThickness)) {
+                    snakeSpeedX = 0;
+                    snakeSpeedY = 0;
+                    collisionFlag = false;
+                }
+
+            }
+            increaseSnake() {
+                this.snakePositionsArc = [[this.snakePositionX, this.snakePositionY]]
+            }
+            mealForSnake() {
+                ctx.beginPath();
+                ctx.fillStyle = this.mealForSnakeColor;
+                ctx.arc(this.mealForSnakePositionX, this.mealForSnakePositionY, 20, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+            newMealPosition() {
+                let arr = [];
+                for (let i = 1; i < 20; i++) {
+                    for (let j = 1; j < 20; j++) {
+                        arr.push([40 * i, 40 * j])
+                    }
+                }
+                console.log(arr);
+                
+                let mealForSnakePositionX1 = 40 + 40*Math.floor(Math.random() * 18);
+                let mealForSnakePositionY1 = 40 + 40*Math.floor(Math.random() * 18);
+
+                if (mealForSnakePositionX1 == this.mealForSnakePositionX && mealForSnakePositionY1 == this.mealForSnakePositionY) {
+                    this.mealForSnakePositionX = mealForSnakePositionY1;
+                    this.mealForSnakePositionY = mealForSnakePositionX1;
+                } else {
+                    this.mealForSnakePositionX = mealForSnakePositionX1;
+                    this.mealForSnakePositionY = mealForSnakePositionY1;
+                }
+            }
+            endGame() {
+                ctx.fillStyle = 'red'
+                ctx.font = '35px Arial '
+                ctx.textAlign = 'center'
+                ctx.fillText('END GAME', CANVASWEIGHT / 2, CANVASHEIGHT / 2)
+            }
+        }
+
+        let game = new Game();
+        function start() {
+            ctx.clearRect(0, 0, CANVASWEIGHT, CANVASHEIGHT)
+            game.run();
+            requestAnimationFrame(start);
+
+        }
+        requestAnimationFrame(start);
+
+
+
+    </script>
+</body>
+
+</html>
